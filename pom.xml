@@ -4,7 +4,7 @@
 
 	<groupId>com.sarbacane.fakesmtp</groupId>
 	<artifactId>fakesmtp</artifactId>
-	<version>2.1.sb1-SNAPSHOT</version>
+	<version>2.1.sb1</version>
 	<packaging>jar</packaging>
 
 	<name>Fake SMTP</name>
