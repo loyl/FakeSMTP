@@ -9,7 +9,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
@@ -36,6 +38,8 @@ public class SuccessOrFailedMessageListenerAdapter implements MessageHandlerFact
 
 	private Collection<SimpleMessageListener> listeners;
 	private int dataDeferredSize;
+
+	private Set<String> softBounces;
 
 	/**
 	 * Initializes this factory with a single listener.
@@ -67,6 +71,7 @@ public class SuccessOrFailedMessageListenerAdapter implements MessageHandlerFact
 	{
 		this.listeners = listeners;
 		this.dataDeferredSize = dataDeferredSize;
+		this.softBounces = new HashSet<String>();
 	}
 
 	/* (non-Javadoc)
@@ -128,6 +133,19 @@ public class SuccessOrFailedMessageListenerAdapter implements MessageHandlerFact
 				throw new RejectException(553, "<" + recipient + "> address unknown.");
 			if (recipient.startsWith("b"))
 				throw new RejectException(452, "Requested action not taken: insufficient system storage");
+			if (recipient.startsWith("c")) {
+				if (!softBounces.contains(recipient))
+					// First try
+					throw new RejectException(452, "Requested action not taken: insufficient system storage");
+				else {
+					// Second try
+					softBounces.remove(recipient);
+				}
+
+			}
+			if (recipient.contains("spamtrap"))
+				throw new RejectException(550,
+						"Your IP will be reported to the UCEPROTECT-Network - better watch out next time.");
 
 			for (SimpleMessageListener listener: SuccessOrFailedMessageListenerAdapter.this.listeners)
 			{
